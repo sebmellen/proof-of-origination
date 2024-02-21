@@ -59,7 +59,7 @@ A blockchain-based timestamp certifies the moment the claim was made, linking it
 ```json
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "http://example.com/my-schema/v1", // Add your schema's unique identifier and version here
+  "$id": "http://example.com/my-schema/v1",
   "type": "object",
   "properties": {
     "metadata": {

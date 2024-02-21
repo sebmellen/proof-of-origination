@@ -59,109 +59,139 @@ A blockchain-based timestamp certifies the moment the claim was made, linking it
 ```json
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Proof of Origination for Research Projects",
+  "$id": "http://example.com/my-schema/v1", // Add your schema's unique identifier and version here
   "type": "object",
   "properties": {
-    "worksClaimed": {
+    "metadata": {
       "type": "object",
       "properties": {
-        "worksClaimedData": {
-          "type": "object",
-          "properties": {
-            "nonce": { "type": "string" },
-            "title": { "type": "string" },
-            "description": { "type": "string" },
-            "authors": {
-              "type": "array",
-              "items": { "type": "string" }
-            },
-            "files": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "fileName": { "type": "string" },
-                  "fileHash": { "type": "string" },
-                  "hashAlgorithm": { "type": "string" }
-                },
-                "required": ["fileName", "fileHash", "hashAlgorithm"]
-              }
-            },
-            "links": {
-              "type": "array",
-              "items": { "type": "string" }
-            }
-          },
-          "required": ["nonce", "title", "description", "authors", "files"]
-        },
-        "worksClaimedHash": {
-          "type": "object",
-          "properties": {
-            "hashValue": { "type": "string" },
-            "hashAlgorithm": { "type": "string" }
-          },
-          "required": ["hashValue", "hashAlgorithm"]
-        }
-      },
-      "required": ["worksClaimedData", "worksClaimedHash"]
-    },
-    "proofOfIdentity": {
-      "type": "object",
-      "properties": {
-        "proofOfIdentityData": {
+        "schema": { "type": "string" },
+        "version": { "type": "string" },
+        "revisionId": { "type": "string", "pattern": "^nanoId\\d+$" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "pastRevisions": {
           "type": "array",
           "items": {
             "type": "object",
             "properties": {
-              "method": { "type": "string" },
-              "identifier": { "type": "string" },
-              "signature": { "type": "string" },
-              "message": { "type": "string" },
-              "externalProofLink": { "type": "string" }
+              "revisionId": { "type": "string" },
+              "createdAt": { "type": "string", "format": "date-time" },
+              "proofHash": {
+                "type": "object",
+                "properties": {
+                  "hash": { "type": "string" },
+                  "hashingAlgorithm": { "type": "string" }
+                },
+                "required": ["hash", "hashingAlgorithm"]
+              }
             },
-            "required": ["method", "identifier", "message"]
+            "required": ["revisionId", "createdAt", "proofHash"]
           }
-        },
-        "proofOfIdentityHash": {
-          "type": "object",
-          "properties": {
-            "hashValue": { "type": "string" },
-            "hashAlgorithm": { "type": "string" }
-          },
-          "required": ["hashValue", "hashAlgorithm"]
         }
       },
-      "required": ["proofOfIdentityData", "proofOfIdentityHash"]
+      "required": ["schema", "version", "revisionId", "createdAt", "pastRevisions"]
+    },
+    "worksClaimed": {
+      "type": "object",
+      "properties": {
+        "nonce": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "authors": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "files": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "fileName": { "type": "string" },
+              "fileHash": { "type": "string" },
+              "hashingAlgorithm": { "type": "string" }
+            },
+            "required": ["fileName", "fileHash", "hashingAlgorithm"]
+          }
+        },
+        "links": {
+          "type": "array",
+          "items": { "type": "string", "format": "uri" }
+        }
+      },
+      "required": ["nonce", "title", "description", "authors", "files", "links"]
+    },
+    "proofOfIdentity": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "method": { "type": "string" },
+          "identifier": { "type": "string" },
+          "signature": { "type": "string" },
+          "message": { "type": "string" },
+          "externalProofLink": { "type": "string", "format": "uri" }
+        },
+        "required": ["method", "identifier", "signature", "message", "externalProofLink"]
+      }
     },
     "publiclyAuditableTimestamp": {
       "type": "object",
       "properties": {
-        "timestampType": { "type": "string", "default": "blockchain" },
-        "blockchainIdentifier": {
+        "proofBundle": {
           "type": "object",
           "properties": {
-            "name": { "type": "string" },
-            "network": { "type": "string" },
-            "referenceURLs": { "type": "array", "items": { "type": "string" } }
+            "base64EncodedProofBundle": { "type": "string" },
+            "hash": { "type": "string" },
+            "hashingAlgorithm": { "type": "string" }
           },
-          "required": ["name", "network", "referenceURLs"]
+          "required": ["base64EncodedProofBundle", "hash", "hashingAlgorithm"]
         },
-        "transactionId": { "type": "string" },
-        "blockNumber": { "type": "integer" },
-        "timestamp": { "type": "string", "format": "date-time" },
-        "currencySymbol": { "type": "string" },
-        "worksClaimedHashReference": { "type": "string" },
-        "proofOfIdentityHashReference": { "type": "string" },
-        "finalProof": { "type": "string" },
-        "retrievalExplanation": {
-          "type": "string",
-          "default": "The final proof is generated by hashing the combined worksClaimedHashReference and proofOfIdentityHashReference, ensuring a unique and secure link between the work claimed and the identity proofs at the time of timestamping."
+        "attestations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "hierarchy": { "type": "integer" },
+              "type": { "type": "string" },
+              "dateTime": { "type": "string", "format": "date-time" },
+              "blockchain": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "network": { "type": "string" },
+                  "currencySymbol": { "type": "string" }
+                },
+                "required": ["name", "network", "currencySymbol"]
+              },
+              "transaction": {
+                "type": "object",
+                "properties": {
+                  "referenceURLs": {
+                    "type": "array",
+                    "items": { "type": "string", "format": "uri" }
+                  },
+                  "transactionId": { "type": "string" },
+                  "blockId": { "type": "integer" },
+                  "retrievalInstructions": {
+                    "type": "object",
+                    "properties": {
+                      "machineReadable": { "type": "string" },
+                      "humanReadable": { "type": "string" }
+                    },
+                    "required": ["machineReadable", "humanReadable"]
+                  }
+                },
+                "required": ["referenceURLs", "transactionId", "blockId", "retrievalInstructions"]
+              }
+            },
+            "required": ["hierarchy", "type", "dateTime", "blockchain", "transaction"]
+          }
         }
       },
-      "required": ["timestampType", "blockchainIdentifier", "transactionId", "blockNumber", "timestamp", "worksClaimedHashReference", "proofOfIdentityHashReference", "finalProof"]
+      "required": ["proofBundle", "attestations"]
     }
   },
-  "required": ["worksClaimed", "proofOfIdentity", "publiclyAuditableTimestamp"]
+  "required": ["metadata", "worksClaimed", "proofOfIdentity", "publiclyAuditableTimestamp"]
 }
 ```
 
@@ -169,8 +199,23 @@ A blockchain-based timestamp certifies the moment the claim was made, linking it
 
 ```json
 {
+  "metadata": {
+    "schema": "",
+    "version": "",
+    "revisionId": "nanoId12345",
+    "createdAt": "2024-01-01T00:00:00Z",
+    "pastRevisions": [
+      {
+        "revisionId": "",
+        "createdAt": "",
+        "proofHash": {
+          "hash": "",
+          "hashingAlgorithm": ""
+        }
+      }
+    ]
+  },
   "worksClaimed": {
-    "worksClaimedData": {
       "nonce": "uniqueNonceValue12345",
       "title": "A Study on the Impact of Urban Green Spaces on Air Quality",
       "description": "This research explores the relationship between urban green spaces and their effect on air quality, focusing on particulate matter reduction.",
@@ -179,53 +224,54 @@ A blockchain-based timestamp certifies the moment the claim was made, linking it
         {
           "fileName": "ResearchPaper.pdf",
           "fileHash": "b1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6p7q8r9s0t1u2v3w4x5y6z7a8b9c0d1e2f3g4h5i6",
-          "hashAlgorithm": "SHA-512"
+          "hashingAlgorithm": "SHA-512"
         },
         {
           "fileName": "DataSet.csv",
           "fileHash": "c1d2e3f4g5h6i7j8k9l0m1n2o3p4q5r6s7t8u9v0w1x2y3z4a5b6c7d8e9f0g1h2i3j4k5l6",
-          "hashAlgorithm": "SHA-512"
+          "hashingAlgorithm": "SHA-512"
         }
       ],
-      "links": ["http://www.example.org/greenspaces-airquality"]
-    },
-    "worksClaimedHash": {
-      "hashValue": "d1e2f3g4h5i6j7k8l9m0n1o2p3q4r5s6t7u8v9w0x1y2z3a4b5c6d7e8f9g0h1i2j3k4l5m6",
-      "hashAlgorithm": "SHA-512"
-    }
+      "links": ["http://www.example.org/greenspaces-airquality"]                                                                                                                                
   },
-  "proofOfIdentity": {
-    "proofOfIdentityData": [
-      {
-        "method": "Social Media Verification",
-        "identifier": "@DrAlexRivera",
-        "signature": "N/A",
-        "message": "I hereby declare that I am an author of the work titled 'A Study on the Impact of Urban Green Spaces on Air Quality'.",
-        "externalProofLink": "https://twitter.com/DrAlexRivera/status/1234567890123456789"
-      }
-    ],
-    "proofOfIdentityHash": {
-      "hashValue": "e1f2g3h4i5j6k7l8m9n0o1p2q3r4s5t6u7v8w9x0y1z2a3b4c5d6e7f8g9h0i1j2k3l4m5n6",
-      "hashAlgorithm": "SHA-512"
+  "proofOfIdentity": [
+    {
+      "method": "Social Media Verification",
+      "identifier": "@DrAlexRivera",
+      "signature": "N/A",
+      "message": "I hereby declare that I am an author of the work titled 'A Study on the Impact of Urban Green Spaces on Air Quality'.",
+      "externalProofLink": "https://twitter.com/DrAlexRivera/status/1234567890123456789"
     }
-  },
+  ],
   "publiclyAuditableTimestamp": {
-    "timestampType": "blockchain",
-    "blockchainIdentifier": {
-      "name": "Ethereum",
-      "network": "mainnet",
-      "referenceURLs": [
-        "https://etherscan.io/tx/0x4e306b5d73960ac6e9ae3b7f9192120db56a4e8e7a10f5e9b3b2b4e3d8f4ed6f"
-      ]
+    "proofBundle": {
+      "base64EncodedProofBundle": "",
+      "hash": "d1e2f3g4h5i6j7k8l9m0n1o2p3q4r5s6t7u8v9w0x1y2z3a4b5c6d7e8f9g0h1i2j3k4l5m6",
+      "hashingAlgorithm": "SHA-512"
     },
-    "transactionId": "0x4e306b5d73960ac6e9ae3b7f9192120db56a4e8e7a10f5e9b3b2b4e3d8f4ed6f",
-    "blockNumber": 1234567,
-    "timestamp": "2024-02-17T12:00:00Z",
-    "currencySymbol": "ETH",
-    "worksClaimedHashReference": "d1e2f3g4h5i6j7k8l9m0n1o2p3q4r5s6t7u8v9w0x1y2z3a4b5c6d7e8f9g0h1i2j3k4l5m6",
-    "proofOfIdentityHashReference": "e1f2g3h4i5j6k7l8m9n0o1p2q3r4s5t6u7v8w9x0y1z2a3b4c5d6e7f8g9h0i1j2k3l4m5n6",
-    "finalProof": "f1g2h3i4j5k6l7m8n9o0p1q2r3s4t5u6v7w8x9y0z1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6",
-    "retrievalExplanation": "The final proof is generated by hashing the combined worksClaimedHashReference and proofOfIdentityHashReference, ensuring a unique and secure link between the work claimed and the identity proofs at the time of timestamping."
+    "attestations": [
+      {
+        "hierarchy": 0,
+        "type": "blockchain",
+        "dateTime": "2024-02-17T12:00:00Z",
+        "blockchain": {
+          "name": "Ethereum",
+          "network": "mainnet",
+          "currencySymbol": "ETH"
+        },
+        "transaction": {
+          "referenceURLs": [
+            "https://etherscan.io/tx/0x4e306b5d73960ac6e9ae3b7f9192120db56a4e8e7a10f5e9b3b2b4e3d8f4ed6f"
+          ],
+          "transactionId": "0x4e306b5d73960ac6e9ae3b7f9192120db56a4e8e7a10f5e9b3b2b4e3d8f4ed6f",
+          "blockId": 1234567,
+          "retrievalInstructions": {
+            "machineReadable": "",
+            "humanReadable": ""
+          }
+        }
+      }
+    ]
   }
 }
 ```
